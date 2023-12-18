@@ -1,42 +1,87 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
+	Controller,
+	Get,
+	Post,
+	Body,
+	Patch,
+	Param,
+	Delete,
+	HttpStatus,
+	HttpCode,
 } from '@nestjs/common';
 import { EventService } from './event.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
-
-@Controller('event')
+import { Event } from '@prisma/client';
+@Controller('events')
 export class EventController {
-  constructor(private readonly eventService: EventService) {}
+	constructor(private readonly eventService: EventService) {}
 
-  @Post()
-  create(@Body() createEventDto: CreateEventDto) {
-    return this.eventService.create(createEventDto);
-  }
+	@Post()
+	async create(
+		@Body()
+		dto: CreateEventDto,
+	): Promise<Event> {
+		const { name, description, datetimeStart, location, totalSeat } = dto;
+		return this.eventService.create({
+			name: name,
+			description,
+			datetimeStart: new Date(datetimeStart),
+			location,
+			totalSeat,
+		});
+	}
 
-  @Get()
-  findAll() {
-    return this.eventService.findAll();
-  }
+	@Get()
+	async findAll(): Promise<Event[]> {
+		return this.eventService.findAll({});
+	}
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.eventService.findOne(+id);
-  }
+	@Get('filter/:searchString')
+	async getFilteredEvent(
+		@Param('searchString') searchString: string,
+	): Promise<Event[]> {
+		return this.eventService.findAll({
+			where: {
+				OR: [
+					{
+						name: { contains: searchString },
+					},
+					{
+						description: { contains: searchString },
+					},
+				],
+			},
+		});
+	}
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateEventDto: UpdateEventDto) {
-    return this.eventService.update(+id, updateEventDto);
-  }
+	@Get(':id')
+	async findOne(@Param('id') id: string): Promise<Event> {
+		return this.eventService.findOne({ id: Number(id) });
+	}
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.eventService.remove(+id);
-  }
+	@Patch(':id')
+	async update(
+		@Param('id') id: string,
+		@Body()
+		dto: UpdateEventDto,
+	): Promise<Event> {
+		const { name, description, datetimeStart, location, totalSeat } = dto;
+		return this.eventService.update({
+			where: { id: Number(id) },
+			data: {
+				name,
+				description,
+				datetimeStart: datetimeStart ? new Date(datetimeStart) : null,
+				location,
+				totalSeat,
+			},
+		});
+	}
+
+	@HttpCode(HttpStatus.NO_CONTENT)
+	@Delete(':id')
+	async remove(@Param('id') id: string): Promise<Event> {
+		return this.eventService.remove({ id: Number(id) });
+	}
 }

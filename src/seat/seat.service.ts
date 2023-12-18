@@ -1,26 +1,56 @@
 import { Injectable } from '@nestjs/common';
-import { CreateSeatDto } from './dto/create-seat.dto';
-import { UpdateSeatDto } from './dto/update-seat.dto';
+import { PrismaService } from '../prisma/prisma.service';
+import { Prisma, Seat } from '@prisma/client';
 
 @Injectable()
 export class SeatService {
-	create(createSeatDto: CreateSeatDto) {
-		return 'This action adds a new seat';
+	constructor(private prisma: PrismaService) {}
+
+	async create(data: Prisma.SeatCreateInput): Promise<Seat> {
+		return this.prisma.seat.create({
+			data,
+		});
 	}
 
-	findAll() {
-		return `This action returns all seat`;
+	async findAll(params: {
+		skip?: number;
+		take?: number;
+		cursor?: Prisma.SeatWhereUniqueInput;
+		where?: Prisma.SeatWhereInput;
+		orderBy?: Prisma.SeatOrderByWithRelationInput;
+	}): Promise<Seat[]> {
+		const { skip, take, cursor, where, orderBy } = params;
+		return this.prisma.seat.findMany({
+			skip,
+			take,
+			cursor,
+			where,
+			orderBy,
+		});
 	}
 
-	findOne(id: number) {
-		return `This action returns a #${id} seat`;
+	async findOne(
+		seatWhereUniqueInput: Prisma.SeatWhereUniqueInput,
+	): Promise<Seat | null> {
+		return this.prisma.seat.findUnique({
+			where: seatWhereUniqueInput,
+		});
 	}
 
-	update(id: number, updateSeatDto: UpdateSeatDto) {
-		return `This action updates a #${id} seat`;
+	async update(params: {
+		where: Prisma.SeatWhereUniqueInput;
+		data: Prisma.SeatUpdateInput;
+	}): Promise<Seat> {
+		console.log('update--->', params);
+		const { where, data } = params;
+		return this.prisma.seat.update({
+			data,
+			where,
+		});
 	}
-
-	remove(id: number) {
-		return `This action removes a #${id} seat`;
+	async remove(where: Prisma.SeatWhereUniqueInput): Promise<Seat> {
+		return this.prisma.seat.delete({
+			where,
+		});
 	}
 }

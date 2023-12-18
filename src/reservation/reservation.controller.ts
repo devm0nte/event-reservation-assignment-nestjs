@@ -6,40 +6,66 @@ import {
 	Patch,
 	Param,
 	Delete,
+	UseGuards,
+	HttpStatus,
+	HttpCode,
 } from '@nestjs/common';
 import { ReservationService } from './reservation.service';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { UpdateReservationDto } from './dto/update-reservation.dto';
+import { Reservation } from '@prisma/client';
+import { JwtGuard } from '../auth/guard/auth.guard';
+import { GetUser } from '../auth/decorator/getuser.decorator';
 
-@Controller('reservation')
+@Controller('reservations')
 export class ReservationController {
 	constructor(private readonly reservationService: ReservationService) {}
 
+	@UseGuards(JwtGuard)
 	@Post()
-	create(@Body() createReservationDto: CreateReservationDto) {
-		return this.reservationService.create(createReservationDto);
+	async create(
+		@GetUser('id') userId: number,
+		@Body()
+		dto: CreateReservationDto,
+	): Promise<Reservation> {
+		const { eventId, seatId } = dto;
+		return this.reservationService.create({
+			user: { connect: { id: userId } },
+			event: { connect: { id: eventId } },
+			seat: { connect: { id: seatId } },
+		});
 	}
 
 	@Get()
-	findAll() {
-		return this.reservationService.findAll();
+	async findAll() {
+		return this.reservationService.findAll({});
 	}
 
 	@Get(':id')
-	findOne(@Param('id') id: string) {
-		return this.reservationService.findOne(+id);
+	async findOne(@Param('id') id: string) {
+		return this.reservationService.findOne({ id: Number(id) });
 	}
 
 	@Patch(':id')
-	update(
+	async update(
 		@Param('id') id: string,
-		@Body() updateReservationDto: UpdateReservationDto,
-	) {
-		return this.reservationService.update(+id, updateReservationDto);
+		@Body()
+		dto: UpdateReservationDto,
+	): Promise<Reservation> {
+		const { eventId, seatId } = dto;
+
+		return this.reservationService.update({
+			where: { id: Number(id) },
+			data: {
+				...(eventId ? { event: { connect: { id: eventId } } } : {}),
+				...(seatId ? { seat: { connect: { id: seatId } } } : {}),
+			},
+		});
 	}
 
+	@HttpCode(HttpStatus.NO_CONTENT)
 	@Delete(':id')
 	remove(@Param('id') id: string) {
-		return this.reservationService.remove(+id);
+		return this.reservationService.remove({ id: Number(id) });
 	}
 }
