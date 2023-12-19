@@ -12,9 +12,20 @@ export class EventService {
 	) {}
 
 	async create(data: Prisma.EventCreateInput): Promise<Event> {
-		return this.prisma.event.create({
+		const result = await this.prisma.event.create({
 			data,
 		});
+		await this.setCacheEvent();
+		return result;
+	}
+
+	async setCacheEvent(): Promise<void> {
+		const result: Event[] = await this.prisma.event.findMany({});
+		await this.cacheManager.set('cachedEvents', result);
+	}
+
+	async getCache(): Promise<Event[]> {
+		return await this.cacheManager.get('cachedEvents');
 	}
 
 	async findAll(params: {
@@ -24,24 +35,18 @@ export class EventService {
 		where?: Prisma.EventWhereInput;
 		orderBy?: Prisma.EventOrderByWithRelationInput;
 	}): Promise<Event[]> {
-		const eventCache: Event[] =
-			await this.cacheManager.get<Event[]>('cachedEvents');
+		// if (!eventCache || !eventCache.length) {
+		const { skip, take, cursor, where, orderBy } = params;
 
-		if (!eventCache || !eventCache.length) {
-			const { skip, take, cursor, where, orderBy } = params;
-			console.log('GET IN');
-
-			const result = await this.prisma.event.findMany({
-				skip,
-				take,
-				cursor,
-				where,
-				orderBy,
-			});
-			this.cacheManager.set('cachedEvents', result);
-		}
-
-		return eventCache;
+		const result = await this.prisma.event.findMany({
+			skip,
+			take,
+			cursor,
+			where,
+			orderBy,
+		});
+		// }
+		return result;
 	}
 
 	async findOne(
@@ -57,10 +62,12 @@ export class EventService {
 		data: Prisma.EventUpdateInput;
 	}): Promise<Event> {
 		const { where, data } = params;
-		return this.prisma.event.update({
+		const result = await this.prisma.event.update({
 			data,
 			where,
 		});
+		await this.setCacheEvent();
+		return result;
 	}
 	async remove(where: Prisma.EventWhereUniqueInput): Promise<Event> {
 		return this.prisma.event.delete({
