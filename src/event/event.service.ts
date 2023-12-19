@@ -1,10 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, Event } from '@prisma/client';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 @Injectable()
 export class EventService {
-	constructor(private prisma: PrismaService) {}
+	constructor(
+		private prisma: PrismaService,
+		@Inject(CACHE_MANAGER) private cacheManager: Cache,
+	) {}
 
 	async create(data: Prisma.EventCreateInput): Promise<Event> {
 		return this.prisma.event.create({
@@ -19,14 +24,23 @@ export class EventService {
 		where?: Prisma.EventWhereInput;
 		orderBy?: Prisma.EventOrderByWithRelationInput;
 	}): Promise<Event[]> {
-		const { skip, take, cursor, where, orderBy } = params;
-		return this.prisma.event.findMany({
-			skip,
-			take,
-			cursor,
-			where,
-			orderBy,
-		});
+		console.log('GET IN');
+		const eventCache: Event[] =
+			await this.cacheManager.get<Event[]>('cachedEvents');
+
+		if (!eventCache.length) {
+			const { skip, take, cursor, where, orderBy } = params;
+			const result = await this.prisma.event.findMany({
+				skip,
+				take,
+				cursor,
+				where,
+				orderBy,
+			});
+			this.cacheManager.set('cachedEvents', result);
+		}
+
+		return eventCache;
 	}
 
 	async findOne(
