@@ -58,16 +58,67 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
-## Support
+# Documentation Section
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+# Simple API Endpoints
 
-## Stay in touch
+## Auth
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+- **Register User:** `POST /auth/register`
+  - Register a new user.
 
-## License
+- **Login User:** `POST /auth/login`
+  - Log in a user.
 
-Nest is [MIT licensed](LICENSE).
+## User
+
+- **Get User Details:** `GET /users/whoami`
+  - Retrieve user details.
+
+- **Edit User:** `PATCH /users`
+  - Edit user information.
+
+## Event
+
+- **Create Event:** `POST /events`
+  - Create a new event.
+
+- **Get All Events:** `GET /events`
+  - Retrieve a list of all events.
+
+- **Get Event by ID:** `GET /events/{id}`
+  - Retrieve details of a specific event.
+
+- **Edit Event by ID:** `PATCH /events/{id}`
+  - Edit details of a specific event.
+
+- **Delete Event by ID:** `DELETE /events/{id}`
+  - Delete a specific event.
+
+## Seat
+
+- **Create Seat:** `POST /seats`
+  - Create a new seat.
+
+- **Get All Seats:** `GET /seats`
+  - Retrieve a list of all seats.
+
+- **Get Seat by ID:** `GET /seats/{id}`
+  - Retrieve details of a specific seat.
+
+- **Edit Seat by ID:** `PATCH /seats/{id}`
+  - Edit details of a specific seat.
+
+- **Delete Seat by ID:** `DELETE /seats/{id}`
+  - Delete a specific seat.
+
+## Reservation
+
+- **Create Reservation:** `POST /reserve/events/{id}`
+  - Create a reservation for a specific event.
+
+- **Get Reservations by Event ID:** `GET /reserve/{id}`
+  - Retrieve reservations for a specific event.
+
+- **Cancel Reservation:** `POST /reserve/{id}/cancel`
+  - Cancel a specific reservation.
