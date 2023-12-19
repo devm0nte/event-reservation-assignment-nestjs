@@ -29,6 +29,12 @@ export class SeatService {
 		});
 	}
 
+	async count(seatWhereInput: Prisma.SeatWhereInput): Promise<number> {
+		return this.prisma.seat.count({
+			where: seatWhereInput,
+		});
+	}
+
 	async findOne(
 		seatWhereUniqueInput: Prisma.SeatWhereUniqueInput,
 	): Promise<Seat | null> {
@@ -41,7 +47,6 @@ export class SeatService {
 		where: Prisma.SeatWhereUniqueInput;
 		data: Prisma.SeatUpdateInput;
 	}): Promise<Seat> {
-		console.log('update--->', params);
 		const { where, data } = params;
 		return this.prisma.seat.update({
 			data,

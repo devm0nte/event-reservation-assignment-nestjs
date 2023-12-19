@@ -6,9 +6,40 @@ import { Prisma, Reservation } from '@prisma/client';
 export class ReservationService {
 	constructor(private prisma: PrismaService) {}
 
+	includeField = {
+		user: {
+			select: {
+				id: true,
+				name: true,
+				phone: true,
+				email: true,
+			},
+		},
+		event: {
+			select: {
+				id: true,
+				name: true,
+				description: true,
+				datetimeStart: true,
+				location: true,
+				totalSeat: true,
+			},
+		},
+		seat: {
+			select: {
+				id: true,
+				number: true,
+				zone: true,
+				row: true,
+				status: true,
+			},
+		},
+	};
+
 	async create(data: Prisma.ReservationCreateInput): Promise<Reservation> {
 		return this.prisma.reservation.create({
 			data,
+			include: this.includeField,
 		});
 	}
 
@@ -26,6 +57,7 @@ export class ReservationService {
 			cursor,
 			where,
 			orderBy,
+			include: this.includeField,
 		});
 	}
 
@@ -34,6 +66,7 @@ export class ReservationService {
 	): Promise<Reservation | null> {
 		return this.prisma.reservation.findUnique({
 			where: eventWhereUniqueInput,
+			include: this.includeField,
 		});
 	}
 
