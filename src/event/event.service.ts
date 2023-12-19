@@ -24,12 +24,13 @@ export class EventService {
 		where?: Prisma.EventWhereInput;
 		orderBy?: Prisma.EventOrderByWithRelationInput;
 	}): Promise<Event[]> {
-		console.log('GET IN');
 		const eventCache: Event[] =
 			await this.cacheManager.get<Event[]>('cachedEvents');
 
-		if (!eventCache.length) {
+		if (!eventCache || !eventCache.length) {
 			const { skip, take, cursor, where, orderBy } = params;
+			console.log('GET IN');
+
 			const result = await this.prisma.event.findMany({
 				skip,
 				take,
