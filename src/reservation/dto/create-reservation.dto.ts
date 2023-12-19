@@ -1,13 +1,13 @@
 import { IsNotEmpty, IsNumber, IsOptional } from 'class-validator';
 
 export class CreateReservationDto {
-	@IsNotEmpty()
+	@IsOptional()
 	@IsNumber()
-	eventId: number;
+	eventId?: number;
 	@IsNotEmpty()
 	@IsNumber()
 	seatId: number;
 	@IsOptional()
 	@IsNumber()
-	userId: number;
+	userId?: number;
 }
