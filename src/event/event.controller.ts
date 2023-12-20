@@ -16,7 +16,7 @@ import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { Event, Seat } from '@prisma/client';
 import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
-import { SeatService } from 'src/seat/seat.service';
+import { SeatService } from '../seat/seat.service';
 
 @Controller('events')
 @UseInterceptors(CacheInterceptor)
