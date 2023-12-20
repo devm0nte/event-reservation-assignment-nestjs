@@ -43,7 +43,10 @@ export class ReservationController {
 				status: true,
 			});
 			if (!isAvailable) {
-				throw new Error('This Seat is not available for Reservation');
+				throw new HttpException(
+					'Can not create reservation, This Seat is not available.',
+					HttpStatus.BAD_REQUEST,
+				);
 			}
 
 			const result: Reservation = await this.reservationService.create({
@@ -60,10 +63,7 @@ export class ReservationController {
 			return result;
 		} catch (error) {
 			console.error('Error creating reservations:', error);
-			throw new HttpException(
-				'Internal Server Error',
-				HttpStatus.INTERNAL_SERVER_ERROR,
-			);
+			throw error;
 		}
 	}
 
@@ -75,11 +75,8 @@ export class ReservationController {
 				where: { userId: userId },
 			});
 		} catch (error) {
-			console.error('Error creating reservations:', error);
-			throw new HttpException(
-				'Internal Server Error',
-				HttpStatus.INTERNAL_SERVER_ERROR,
-			);
+			console.error('Error getting all reservation:', error);
+			throw error;
 		}
 	}
 
@@ -92,11 +89,8 @@ export class ReservationController {
 				userId: userId,
 			});
 		} catch (error) {
-			console.error('Error creating reservations:', error);
-			throw new HttpException(
-				'Internal Server Error',
-				HttpStatus.INTERNAL_SERVER_ERROR,
-			);
+			console.error('Error getting a reservation:', error);
+			throw error;
 		}
 	}
 
@@ -123,11 +117,8 @@ export class ReservationController {
 				},
 			});
 		} catch (error) {
-			console.error('Error creating reservations:', error);
-			throw new HttpException(
-				'Internal Server Error',
-				HttpStatus.INTERNAL_SERVER_ERROR,
-			);
+			console.error('Error on cancel reservation:', error);
+			throw error;
 		}
 	}
 
@@ -149,11 +140,8 @@ export class ReservationController {
 				},
 			});
 		} catch (error) {
-			console.error('Error creating reservations:', error);
-			throw new HttpException(
-				'Internal Server Error',
-				HttpStatus.INTERNAL_SERVER_ERROR,
-			);
+			console.error('Error updating reservation:', error);
+			throw error;
 		}
 	}
 
@@ -163,11 +151,8 @@ export class ReservationController {
 		try {
 			return this.reservationService.remove({ id: Number(id) });
 		} catch (error) {
-			console.error('Error creating reservations:', error);
-			throw new HttpException(
-				'Internal Server Error',
-				HttpStatus.INTERNAL_SERVER_ERROR,
-			);
+			console.error('Error deleting reservation:', error);
+			throw error;
 		}
 	}
 }

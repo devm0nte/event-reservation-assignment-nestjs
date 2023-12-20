@@ -8,7 +8,6 @@ import {
 	Delete,
 	HttpStatus,
 	HttpCode,
-	HttpException,
 } from '@nestjs/common';
 import { SeatService } from './seat.service';
 import { CreateSeatDto } from './dto/create-seat.dto';
@@ -52,11 +51,8 @@ export class SeatController {
 
 			return result;
 		} catch (error) {
-			console.error('Error creating reservations:', error);
-			throw new HttpException(
-				'Internal Server Error',
-				HttpStatus.INTERNAL_SERVER_ERROR,
-			);
+			console.error('Error creating seat:', error);
+			throw error;
 		}
 	}
 
@@ -65,11 +61,8 @@ export class SeatController {
 		try {
 			return this.seatService.findAll({});
 		} catch (error) {
-			console.error('Error creating reservations:', error);
-			throw new HttpException(
-				'Internal Server Error',
-				HttpStatus.INTERNAL_SERVER_ERROR,
-			);
+			console.error('Error getting all seat:', error);
+			throw error;
 		}
 	}
 
@@ -78,11 +71,8 @@ export class SeatController {
 		try {
 			return this.seatService.findOne({ id: Number(id) });
 		} catch (error) {
-			console.error('Error creating reservations:', error);
-			throw new HttpException(
-				'Internal Server Error',
-				HttpStatus.INTERNAL_SERVER_ERROR,
-			);
+			console.error('Error getting a seat by Id:', error);
+			throw error;
 		}
 	}
 
@@ -119,11 +109,8 @@ export class SeatController {
 			});
 			return result;
 		} catch (error) {
-			console.error('Error creating reservations:', error);
-			throw new HttpException(
-				'Internal Server Error',
-				HttpStatus.INTERNAL_SERVER_ERROR,
-			);
+			console.error('Error updating a seat:', error);
+			throw error;
 		}
 	}
 
@@ -133,11 +120,8 @@ export class SeatController {
 		try {
 			return this.seatService.remove({ id: Number(id) });
 		} catch (error) {
-			console.error('Error creating reservations:', error);
-			throw new HttpException(
-				'Internal Server Error',
-				HttpStatus.INTERNAL_SERVER_ERROR,
-			);
+			console.error('Error deleting a seat:', error);
+			throw error;
 		}
 	}
 }

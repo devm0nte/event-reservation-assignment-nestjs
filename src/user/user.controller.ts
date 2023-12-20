@@ -10,7 +10,6 @@ import {
 	UseGuards,
 	HttpStatus,
 	HttpCode,
-	HttpException,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -37,11 +36,8 @@ export class UserController {
 				phone,
 			});
 		} catch (error) {
-			console.error('Error creating reservations:', error);
-			throw new HttpException(
-				'Internal Server Error',
-				HttpStatus.INTERNAL_SERVER_ERROR,
-			);
+			console.error('Error creating user:', error);
+			throw error;
 		}
 	}
 
@@ -50,11 +46,8 @@ export class UserController {
 		try {
 			return this.userService.findAll(params);
 		} catch (error) {
-			console.error('Error creating reservations:', error);
-			throw new HttpException(
-				'Internal Server Error',
-				HttpStatus.INTERNAL_SERVER_ERROR,
-			);
+			console.error('Error getting all users:', error);
+			throw error;
 		}
 	}
 
@@ -64,11 +57,8 @@ export class UserController {
 		try {
 			return user;
 		} catch (error) {
-			console.error('Error creating reservations:', error);
-			throw new HttpException(
-				'Internal Server Error',
-				HttpStatus.INTERNAL_SERVER_ERROR,
-			);
+			console.error('Error getting current user detail:', error);
+			throw error;
 		}
 	}
 
@@ -77,11 +67,8 @@ export class UserController {
 		try {
 			return this.userService.findOne({ id: Number(id) });
 		} catch (error) {
-			console.error('Error creating reservations:', error);
-			throw new HttpException(
-				'Internal Server Error',
-				HttpStatus.INTERNAL_SERVER_ERROR,
-			);
+			console.error('Error getting user by Id:', error);
+			throw error;
 		}
 	}
 
@@ -102,11 +89,8 @@ export class UserController {
 				},
 			});
 		} catch (error) {
-			console.error('Error creating reservations:', error);
-			throw new HttpException(
-				'Internal Server Error',
-				HttpStatus.INTERNAL_SERVER_ERROR,
-			);
+			console.error('Error updating user:', error);
+			throw error;
 		}
 	}
 
@@ -116,11 +100,8 @@ export class UserController {
 		try {
 			return this.userService.remove({ id: Number(id) });
 		} catch (error) {
-			console.error('Error creating reservations:', error);
-			throw new HttpException(
-				'Internal Server Error',
-				HttpStatus.INTERNAL_SERVER_ERROR,
-			);
+			console.error('Error deleting user:', error);
+			throw error;
 		}
 	}
 }

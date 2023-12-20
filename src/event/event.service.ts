@@ -11,6 +11,17 @@ export class EventService {
 		@Inject(CACHE_MANAGER) private cacheManager: Cache,
 	) {}
 
+	includeField = {
+		seats: {
+			select: {
+				id: true,
+				number: true,
+				zone: true,
+				row: true,
+				status: true,
+			},
+		},
+	};
 	async create(data: Prisma.EventCreateInput): Promise<Event> {
 		const result = await this.prisma.event.create({
 			data,
@@ -44,6 +55,7 @@ export class EventService {
 			cursor,
 			where,
 			orderBy,
+			include: this.includeField,
 		});
 		// }
 		return result;
@@ -54,6 +66,7 @@ export class EventService {
 	): Promise<Event | null> {
 		return this.prisma.event.findUnique({
 			where: eventWhereUniqueInput,
+			include: this.includeField,
 		});
 	}
 

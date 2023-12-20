@@ -6,21 +6,25 @@ import {
 	Patch,
 	Param,
 	Delete,
-	HttpStatus,
 	HttpCode,
-	HttpException,
+	HttpStatus,
 	UseInterceptors,
+	NotFoundException,
 } from '@nestjs/common';
 import { EventService } from './event.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
-import { Event } from '@prisma/client';
+import { Event, Seat } from '@prisma/client';
 import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
+import { SeatService } from 'src/seat/seat.service';
 
 @Controller('events')
 @UseInterceptors(CacheInterceptor)
 export class EventController {
-	constructor(private readonly eventService: EventService) {}
+	constructor(
+		private readonly eventService: EventService,
+		private readonly seatService: SeatService,
+	) {}
 
 	@Post()
 	async create(
@@ -38,11 +42,8 @@ export class EventController {
 				totalSeat,
 			});
 		} catch (error) {
-			console.error('Error creating reservations:', error);
-			throw new HttpException(
-				'Internal Server Error',
-				HttpStatus.INTERNAL_SERVER_ERROR,
-			);
+			console.error('Error on event creating:', error);
+			throw error;
 		}
 	}
 
@@ -51,13 +52,15 @@ export class EventController {
 	@CacheTTL(5)
 	async findAll(): Promise<Event[]> {
 		try {
-			return this.eventService.findAll({});
+			const result = await this.eventService.findAll({});
+			if (!result) {
+				throw new NotFoundException('Event not found');
+			}
+
+			return result;
 		} catch (error) {
-			console.error('Error creating reservations:', error);
-			throw new HttpException(
-				'Internal Server Error',
-				HttpStatus.INTERNAL_SERVER_ERROR,
-			);
+			console.error('Error getting all events:', error);
+			throw error;
 		}
 	}
 
@@ -66,7 +69,7 @@ export class EventController {
 		@Param('searchString') searchString: string,
 	): Promise<Event[]> {
 		try {
-			return this.eventService.findAll({
+			const result = await this.eventService.findAll({
 				where: {
 					OR: [
 						{
@@ -78,25 +81,37 @@ export class EventController {
 					],
 				},
 			});
+			if (!result) {
+				throw new NotFoundException('Event not found');
+			}
+			return result;
 		} catch (error) {
-			console.error('Error creating reservations:', error);
-			throw new HttpException(
-				'Internal Server Error',
-				HttpStatus.INTERNAL_SERVER_ERROR,
-			);
+			console.error('Error getting events by filter:', error);
+			throw error;
 		}
 	}
 
 	@Get(':id')
 	async findOne(@Param('id') id: string): Promise<Event> {
 		try {
-			return this.eventService.findOne({ id: Number(id) });
+			const result = await this.eventService.findOne({ id: Number(id) });
+			if (!result) {
+				throw new NotFoundException('Event not found');
+			}
+			return result;
 		} catch (error) {
-			console.error('Error creating reservations:', error);
-			throw new HttpException(
-				'Internal Server Error',
-				HttpStatus.INTERNAL_SERVER_ERROR,
-			);
+			console.error('Error getting event by Id:', error);
+			throw error;
+		}
+	}
+
+	@Get(':id/seats')
+	async findSeats(@Param('id') id: string): Promise<Seat[]> {
+		try {
+			return this.seatService.findAll({ where: { eventId: Number(id) } });
+		} catch (error) {
+			console.error('Error getting all Seats of the event:', error);
+			throw error;
 		}
 	}
 
@@ -122,11 +137,8 @@ export class EventController {
 				},
 			});
 		} catch (error) {
-			console.error('Error creating reservations:', error);
-			throw new HttpException(
-				'Internal Server Error',
-				HttpStatus.INTERNAL_SERVER_ERROR,
-			);
+			console.error('Error updating event:', error);
+			throw error;
 		}
 	}
 
@@ -136,11 +148,8 @@ export class EventController {
 		try {
 			return this.eventService.remove({ id: Number(id) });
 		} catch (error) {
-			console.error('Error creating reservations:', error);
-			throw new HttpException(
-				'Internal Server Error',
-				HttpStatus.INTERNAL_SERVER_ERROR,
-			);
+			console.error('Error deleting event:', error);
+			throw error;
 		}
 	}
 }
