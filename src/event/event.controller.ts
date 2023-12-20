@@ -8,18 +8,18 @@ import {
 	Delete,
 	HttpCode,
 	HttpStatus,
-	UseInterceptors,
+	// UseInterceptors,
 	NotFoundException,
 } from '@nestjs/common';
 import { EventService } from './event.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { Event, Seat } from '@prisma/client';
-import { CacheInterceptor, CacheKey, CacheTTL } from '@nestjs/cache-manager';
+import { CacheKey, CacheTTL } from '@nestjs/cache-manager';
 import { SeatService } from '../seat/seat.service';
 
 @Controller('events')
-@UseInterceptors(CacheInterceptor)
+// @UseInterceptors(CacheInterceptor)
 export class EventController {
 	constructor(
 		private readonly eventService: EventService,
@@ -49,7 +49,7 @@ export class EventController {
 
 	@Get()
 	@CacheKey('cachedEvents')
-	@CacheTTL(5)
+	@CacheTTL(5000)
 	async findAll(): Promise<Event[]> {
 		try {
 			const result = await this.eventService.findAll({});
