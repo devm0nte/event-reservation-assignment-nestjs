@@ -246,12 +246,8 @@ describe('api-test e2e', () => {
 					.expectStatus(204);
 			});
 
-			it('after delete the last event, should get empty array of event', () => {
-				return pactum
-					.spec()
-					.get('/events')
-					.expectStatus(200)
-					.expectJsonLength(0);
+			it('after delete the last event, should get error 404', () => {
+				return pactum.spec().get('/events').expectStatus(404);
 			});
 		});
 	});
@@ -377,12 +373,8 @@ describe('api-test e2e', () => {
 						.expectStatus(204);
 				});
 
-				it('after delete the last seat, should get empty array of seat', () => {
-					return pactum
-						.spec()
-						.get('/seats')
-						.expectStatus(200)
-						.expectJsonLength(0);
+				it('after delete the last seat, should get error 404', () => {
+					return pactum.spec().get('/seats').expectStatus(404);
 				});
 			});
 		});
@@ -471,16 +463,14 @@ describe('api-test e2e', () => {
 		});
 
 		describe('Create and Get all Reserve', () => {
-			it('user do not have any reservation, should get empty array', () => {
+			it('user do not have any reservation, should get error 404', () => {
 				return pactum
 					.spec()
 					.get('/reserve')
 					.withHeaders({
 						Authorization: 'Bearer $S{userAt}',
 					})
-					.expectStatus(200)
-					.expectBodyContains([])
-					.expectJsonLength(0);
+					.expectStatus(404);
 			});
 
 			it('if valid input, should create Reserve for the Event', () => {
