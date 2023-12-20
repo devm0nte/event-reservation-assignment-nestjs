@@ -57,7 +57,13 @@ export class EventService {
 			orderBy,
 			include: this.includeField,
 		});
-		// }
+
+		// check cache
+		const cache = await this.getCache();
+		if (!cache) {
+			await this.setCacheEvent();
+		}
+
 		return result;
 	}
 
@@ -83,8 +89,10 @@ export class EventService {
 		return result;
 	}
 	async remove(where: Prisma.EventWhereUniqueInput): Promise<Event> {
-		return this.prisma.event.delete({
+		const result = await this.prisma.event.delete({
 			where,
 		});
+		await this.setCacheEvent();
+		return result;
 	}
 }
