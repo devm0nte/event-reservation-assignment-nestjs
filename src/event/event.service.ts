@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, Event } from '@prisma/client';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -32,11 +32,16 @@ export class EventService {
 
 	async setCacheEvent(): Promise<void> {
 		const result: Event[] = await this.prisma.event.findMany({});
+
 		await this.cacheManager.set('cachedEvents', result);
 	}
 
 	async getCache(): Promise<Event[]> {
-		return await this.cacheManager.get('cachedEvents');
+		const result: Event[] = await this.cacheManager.get('cachedEvents');
+		if (!result || !result.length) {
+			throw new NotFoundException('Event not found');
+		}
+		return result;
 	}
 
 	async findAll(params: {

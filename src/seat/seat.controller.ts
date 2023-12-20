@@ -8,6 +8,7 @@ import {
 	Delete,
 	HttpStatus,
 	HttpCode,
+	NotFoundException,
 } from '@nestjs/common';
 import { SeatService } from './seat.service';
 import { CreateSeatDto } from './dto/create-seat.dto';
@@ -22,6 +23,26 @@ export class SeatController {
 		private readonly eventService: EventService,
 	) {}
 
+	async isEventExist(eventId: number): Promise<boolean> {
+		try {
+			const found = await this.eventService.findOne({ id: eventId });
+			return !!found;
+		} catch (error) {
+			console.error('Error checking event exist:', error);
+			return false;
+		}
+	}
+
+	async isSeatExist(seatId: number): Promise<boolean> {
+		try {
+			const found = await this.seatService.findOne({ id: seatId });
+			return !!found;
+		} catch (error) {
+			console.error('Error checking seat exist:', error);
+			return false;
+		}
+	}
+
 	@Post()
 	async create(
 		@Body()
@@ -32,6 +53,12 @@ export class SeatController {
 			const seatZone: string = zone.toUpperCase();
 			const seatRow: string = row.toString();
 			const seatNumber: string = `${seatZone}${seatRow}`;
+
+			// check event was exist
+			const eventExist = await this.isEventExist(eventId);
+			if (!eventExist) {
+				throw new NotFoundException('Event does not exist');
+			}
 
 			const result = await this.seatService.create({
 				number: seatNumber,
@@ -59,7 +86,12 @@ export class SeatController {
 	@Get()
 	async findAll(): Promise<Seat[]> {
 		try {
-			return this.seatService.findAll({});
+			const result = await this.seatService.findAll({});
+			if (!result || !result.length) {
+				throw new NotFoundException('Seat not found');
+			}
+
+			return result;
 		} catch (error) {
 			console.error('Error getting all seat:', error);
 			throw error;
@@ -69,7 +101,11 @@ export class SeatController {
 	@Get(':id')
 	async findOne(@Param('id') id: string) {
 		try {
-			return this.seatService.findOne({ id: Number(id) });
+			const result = await this.seatService.findOne({ id: Number(id) });
+			if (!result) {
+				throw new NotFoundException('Seat not found');
+			}
+			return result;
 		} catch (error) {
 			console.error('Error getting a seat by Id:', error);
 			throw error;
@@ -87,6 +123,17 @@ export class SeatController {
 			const seatZone: string = zone.toUpperCase();
 			const seatRow: string = row.toString();
 			const seatNumber: string = `${seatZone}${seatRow}`;
+
+			const seatExist = await this.isSeatExist(Number(id));
+			if (!seatExist) {
+				throw new NotFoundException('Seat not found');
+			}
+
+			// check target event
+			const eventExist = await this.isEventExist(eventId);
+			if (!eventExist) {
+				throw new NotFoundException('Event does not exist');
+			}
 
 			const result = await this.seatService.update({
 				where: { id: Number(id) },
@@ -116,6 +163,10 @@ export class SeatController {
 	@Delete(':id')
 	async remove(@Param('id') id: string) {
 		try {
+			const seatExist = await this.isSeatExist(Number(id));
+			if (!seatExist) {
+				throw new NotFoundException('Seat not found');
+			}
 			return this.seatService.remove({ id: Number(id) });
 		} catch (error) {
 			console.error('Error deleting a seat:', error);

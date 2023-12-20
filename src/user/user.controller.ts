@@ -10,6 +10,7 @@ import {
 	UseGuards,
 	HttpStatus,
 	HttpCode,
+	NotFoundException,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -21,6 +22,16 @@ import { GetUser } from '../auth/decorator/getuser.decorator';
 @Controller('users')
 export class UserController {
 	constructor(private readonly userService: UserService) {}
+
+	async isUserExist(userId: number): Promise<boolean> {
+		try {
+			const found = await this.userService.findOne({ id: userId });
+			return !!found;
+		} catch (error) {
+			console.error('Error checking user exist:', error);
+			return false;
+		}
+	}
 
 	@Post()
 	async create(
@@ -44,7 +55,11 @@ export class UserController {
 	@Get()
 	async findAll(@Query() params: any) {
 		try {
-			return this.userService.findAll(params);
+			const result = await this.userService.findAll(params);
+			if (!result || !result.length) {
+				throw new NotFoundException('User not found');
+			}
+			return result;
 		} catch (error) {
 			console.error('Error getting all users:', error);
 			throw error;
@@ -65,7 +80,11 @@ export class UserController {
 	@Get(':id')
 	async findOne(@Param('id') id: string) {
 		try {
-			return this.userService.findOne({ id: Number(id) });
+			const result = await this.userService.findOne({ id: Number(id) });
+			if (!result) {
+				throw new NotFoundException('User not found');
+			}
+			return result;
 		} catch (error) {
 			console.error('Error getting user by Id:', error);
 			throw error;
@@ -80,6 +99,11 @@ export class UserController {
 		dto: UpdateUserDto,
 	): Promise<User> {
 		try {
+			const isUserExist = await this.isUserExist(Number(id));
+			if (!isUserExist) {
+				throw new NotFoundException('User not found');
+			}
+
 			const { name, phone } = dto;
 			return this.userService.update({
 				where: { id: Number(id) },
@@ -98,6 +122,10 @@ export class UserController {
 	@Delete(':id')
 	async remove(@Param('id') id: string) {
 		try {
+			const isUserExist = await this.isUserExist(Number(id));
+			if (!isUserExist) {
+				throw new NotFoundException('User not found');
+			}
 			return this.userService.remove({ id: Number(id) });
 		} catch (error) {
 			console.error('Error deleting user:', error);

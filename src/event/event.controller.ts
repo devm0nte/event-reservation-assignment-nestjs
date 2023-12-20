@@ -26,6 +26,16 @@ export class EventController {
 		private readonly seatService: SeatService,
 	) {}
 
+	async isEventExist(eventId: number): Promise<boolean> {
+		try {
+			const found = await this.eventService.findOne({ id: eventId });
+			return !!found;
+		} catch (error) {
+			console.error('Error checking event exist:', error);
+			return false;
+		}
+	}
+
 	@Post()
 	async create(
 		@Body()
@@ -53,7 +63,7 @@ export class EventController {
 	async findAll(): Promise<Event[]> {
 		try {
 			const result = await this.eventService.findAll({});
-			if (!result) {
+			if (!result || !result.length) {
 				throw new NotFoundException('Event not found');
 			}
 
@@ -81,7 +91,7 @@ export class EventController {
 					],
 				},
 			});
-			if (!result) {
+			if (!result || !result.length) {
 				throw new NotFoundException('Event not found');
 			}
 			return result;
@@ -108,7 +118,17 @@ export class EventController {
 	@Get(':id/seats')
 	async findSeats(@Param('id') id: string): Promise<Seat[]> {
 		try {
-			return this.seatService.findAll({ where: { eventId: Number(id) } });
+			const eventExist = await this.isEventExist(Number(id));
+			if (!eventExist) {
+				throw new NotFoundException('Event not found');
+			}
+			const result = await this.seatService.findAll({
+				where: { eventId: Number(id) },
+			});
+			if (!result || !result.length) {
+				throw new NotFoundException('Seat not found');
+			}
+			return result;
 		} catch (error) {
 			console.error('Error getting all Seats of the event:', error);
 			throw error;
@@ -122,6 +142,10 @@ export class EventController {
 		dto: UpdateEventDto,
 	): Promise<Event> {
 		try {
+			const eventExist = await this.isEventExist(Number(id));
+			if (!eventExist) {
+				throw new NotFoundException('Event not found');
+			}
 			const { name, description, datetimeStart, location, totalSeat } =
 				dto;
 			return this.eventService.update({
@@ -146,6 +170,10 @@ export class EventController {
 	@Delete(':id')
 	async remove(@Param('id') id: string): Promise<Event> {
 		try {
+			const eventExist = await this.isEventExist(Number(id));
+			if (!eventExist) {
+				throw new NotFoundException('Event not found');
+			}
 			return this.eventService.remove({ id: Number(id) });
 		} catch (error) {
 			console.error('Error deleting event:', error);
