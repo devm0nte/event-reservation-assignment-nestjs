@@ -10,6 +10,8 @@ import { UpdateEventDto } from '../src/event/dto/update-event.dto';
 import { CreateSeatDto } from '../src/seat/dto/create-seat.dto';
 import { UpdateSeatDto } from '../src/seat/dto/update-seat.dto';
 import { stash } from 'pactum';
+import { HttpAdapterHost } from '@nestjs/core';
+import { AllExceptionsFilter } from '../src/exception/all-exception-filter';
 
 describe('api-test e2e', () => {
 	let app: INestApplication;
@@ -25,6 +27,8 @@ describe('api-test e2e', () => {
 				whitelist: true,
 			}),
 		);
+		const { httpAdapter } = app.get(HttpAdapterHost);
+		app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
 		await app.init();
 		await app.listen(3001);
 
@@ -290,9 +294,20 @@ describe('api-test e2e', () => {
 					.expectStatus(201)
 					.stores('seatId', 'id');
 			});
+			it('if duplicate input, should throw error', () => {
+				return pactum
+					.spec()
+					.post('/seats')
+					.withJson({
+						row: seatDto.row,
+						zone: seatDto.zone,
+						eventId: '$M{eventId2}',
+					})
+					.expectStatus(409);
+			});
 
 			describe('Get all Seat', () => {
-				it('if db have the Seat, should get all event', () => {
+				it('if db have the Seat, should get all seats', () => {
 					return pactum
 						.spec()
 						.get('/seats')
@@ -347,6 +362,13 @@ describe('api-test e2e', () => {
 			});
 
 			describe('Delete Seat by id', () => {
+				it('before delete the last seat, should get array of seat', () => {
+					return pactum
+						.spec()
+						.get('/seats')
+						.expectStatus(200)
+						.expectJsonLength(1);
+				});
 				it('if db have an Seat id, should delete Seat', () => {
 					return pactum
 						.spec()
