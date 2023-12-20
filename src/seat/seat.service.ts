@@ -1,15 +1,28 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, Seat } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class SeatService {
 	constructor(private prisma: PrismaService) {}
 
 	async create(data: Prisma.SeatCreateInput): Promise<Seat> {
-		return this.prisma.seat.create({
-			data,
-		});
+		try {
+			const result = await this.prisma.seat.create({
+				data,
+			});
+			return result;
+		} catch (error) {
+			if (error instanceof PrismaClientKnownRequestError) {
+				if (error.code === 'P2002') {
+					throw new ConflictException(
+						'This seat has already existed',
+					);
+				}
+			}
+			throw error;
+		}
 	}
 
 	async findAll(params: {
@@ -54,8 +67,19 @@ export class SeatService {
 		});
 	}
 	async remove(where: Prisma.SeatWhereUniqueInput): Promise<Seat> {
-		return this.prisma.seat.delete({
-			where,
-		});
+		try {
+			const result = await this.prisma.seat.delete({
+				where,
+			});
+			return result;
+		} catch (error) {
+			if (error instanceof PrismaClientKnownRequestError) {
+				if (error.code === 'P2002') {
+					throw new ConflictException(
+						'This seat has already existed',
+					);
+				}
+			}
+		}
 	}
 }
