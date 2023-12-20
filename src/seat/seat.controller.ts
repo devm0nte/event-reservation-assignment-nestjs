@@ -83,7 +83,6 @@ export class SeatController {
 		dto: UpdateSeatDto,
 	): Promise<Seat> {
 		try {
-			console.log(dto, id);
 			const { zone, row, eventId } = dto;
 			const seatZone: string = zone.toUpperCase();
 			const seatRow: string = row.toString();
@@ -102,7 +101,6 @@ export class SeatController {
 			const cnt: number = await this.seatService.count({
 				eventId: eventId,
 			});
-			console.log(cnt, eventId);
 			await this.eventService.update({
 				where: { id: eventId },
 				data: { totalSeat: cnt },
