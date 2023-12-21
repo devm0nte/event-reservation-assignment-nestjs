@@ -1,7 +1,7 @@
 {
   "name": "assignment-nestjs",
   "version": "0.0.1",
-  "description": "This is an assignment for the testing skills of the tpop company. This project is about creating api services for reserving event's seat by user",
+  "description": "This is an assignment for the testing skills about nestJS framework. This project is about creating api services for reserving event's seat by user",
   "author": "Pacharaphon Kaewpairee (pacharaphonk.dev@gmail.com)",
   "private": true,
   "license": "UNLICENSED",
@@ -15,6 +15,7 @@
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
+    "reset:dev": "prisma migrate reset --force && nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
